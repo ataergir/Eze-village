@@ -1,4 +1,4 @@
-import './style.css'
+import '/css/style.css'
 import * as THREE from 'three';
 import * as dat from 'dat.gui'
 
@@ -12,6 +12,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 
 
 const gui = new dat.GUI()
+gui.close()
 const canvas = document.querySelector('canvas.webgl')
 
 
@@ -48,19 +49,10 @@ camera.position.y = 0
 camera.position.z = 2
 scene.add(camera)
 
-//////////////////////////////// Controls ////////////////////////////////
-// const controls = new OrbitControls(camera, canvas)
-// controls.autoRotate = false
-// controls.autoRotateSpeed = 5
-
-// controls.enableDamping= true
-// controls.enableZoom = true
-// controls.enableRotate = true
-// controls.enablePan = true
-
 //////////////////////////////// Renderer ////////////////////////////////
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas,
+    antialias: true
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -74,6 +66,11 @@ const loadingAmount = document.querySelector('.loading-amount')
 const manager = new THREE.LoadingManager()
 manager.onLoad = ()=>{
     loadingBg.style.top = '100vh'
+    loadingBg.style.opacity = '0'
+    setTimeout(()=>{
+        loadingBg.style.display = 'none'
+    },5000)
+    changeViewPoint()
 }
 
 
@@ -117,15 +114,13 @@ loader.load(
 city.rotation.x = - Math.PI * 0.5
 scene.add(city)
 
+// gui.add(camera.position,'x').min(-5).max(5).step(0.01).listen()
+// gui.add(camera.position,'y').min(-5).max(5).step(0.01).listen()
+// gui.add(camera.position,'z').min(-5).max(5).step(0.01).listen()
+
 camera.position.x = -2
 camera.position.y = 0.7
 camera.position.z = 0.8
-
-gui.add(camera.position,'x').min(-5).max(5).step(0.01).listen()
-gui.add(camera.position,'y').min(-5).max(5).step(0.01).listen()
-gui.add(camera.position,'z').min(-5).max(5).step(0.01).listen()
-
-
 let cameraLookAt = new THREE.Vector3(1.8,1.9,-4)
 
 let cameraNextLook = {
@@ -258,16 +253,14 @@ const changeViewPoint = () => {
         animationPlaying = false
         NextViewpointButton.classList.toggle('hidden')
     },(Math.max(lookDuration, PosDuration) * 1000) * 0.4)
-
-    // animationPlaying = false
 }
 
 const NextViewpointButton = document.querySelector('.nextViewpointButton')
 NextViewpointButton.addEventListener('click', changeViewPoint)
 
-gui.add(cameraLookAt,'x').min(-5).max(5).step(0.01).listen()
-gui.add(cameraLookAt,'y').min(-5).max(5).step(0.01).listen()
-gui.add(cameraLookAt,'z').min(-5).max(5).step(0.01).listen()
+// gui.add(cameraLookAt,'x').min(-5).max(5).step(0.01).listen()
+// gui.add(cameraLookAt,'y').min(-5).max(5).step(0.01).listen()
+// gui.add(cameraLookAt,'z').min(-5).max(5).step(0.01).listen()
 
 
 
@@ -280,8 +273,12 @@ const tick = () =>
     stats.begin()
     const elapsedTime = clock.getElapsedTime()
 
+    
+    cameraLookAt.x += Math.cos(elapsedTime * 0.33) * 0.0001
+    cameraLookAt.y += Math.sin(elapsedTime * 0.5) * 0.0002
+    cameraLookAt.z += Math.sin(elapsedTime * 0.85) * 0.0003
+    
     camera.lookAt(cameraLookAt)
-
     // controls.update()
 
     renderer.render(scene, camera)
